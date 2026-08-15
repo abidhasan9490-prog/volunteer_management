@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Middleware
 app.use(express.json({ limit: '5mb' })); // 👈 বেস৬৪ প্রোফাইল ছবি পাঠানোর জন্য default 100kb limit বাড়ানো হলো
@@ -30,8 +31,8 @@ const { checkAndAwardBadges, BADGE_DEFINITIONS } = require('./utils/badges');
 const { createRateLimiter } = require('./middleware/rateLimiter');
 
 // 🚦 বিভিন্ন sensitive route-এর জন্য rate limiter (spam/abuse প্রতিরোধ করার জন্য)
-const registerLimiter = createRateLimiter(60 * 60 * 1000, 5, 'Registration'); // প্রতি ঘণ্টায় সর্বোচ্চ ৫টা registration, প্রতি IP থেকে
-const loginLimiter = createRateLimiter(15 * 60 * 1000, 8, 'Login', (req) => `login:${req.ip}`); // প্রতি ১৫ মিনিটে সর্বোচ্চ ৮ বার (brute-force প্রতিরোধ)
+const registerLimiter = createRateLimiter(60 * 60 * 1000, 50, 'Registration'); // প্রতি ঘণ্টায় সর্বোচ্চ ৫টা registration, প্রতি IP থেকে
+const loginLimiter = createRateLimiter(15 * 60 * 1000, 15, 'Login', (req) => `login:${req.ip}`); // প্রতি ১৫ মিনিটে সর্বোচ্চ ৮ বার (brute-force প্রতিরোধ)
 const sosLimiter = createRateLimiter(10 * 60 * 1000, 3, 'SOS Request', (req) => `sos:${req.ip}`); // প্রতি ১০ মিনিটে সর্বোচ্চ ৩টা SOS (spam প্রতিরোধ)
 const emailActionLimiter = createRateLimiter(15 * 60 * 1000, 3, 'Email Request', (req) => `email:${req.ip}`); // forgot-password/resend-verification spam প্রতিরোধ
 
