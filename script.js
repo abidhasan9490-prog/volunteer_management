@@ -1357,6 +1357,6 @@ document.getElementById('volunteer-reg-form').addEventListener('submit', async (
         alert('Server Connection Failed!');
     } finally {
         submitBtn.disabled = false;
-
+    }
 });
 
