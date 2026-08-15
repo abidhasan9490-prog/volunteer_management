@@ -1290,6 +1290,9 @@ function handleProfilePicSelect(event) {
 
 document.getElementById('volunteer-reg-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn.disabled) return; // 👈 দ্বিতীয়বার click/tap হলে এখানেই আটকে যাবে
+    submitBtn.disabled = true;
 
     const nameInput = document.getElementById('reg-name').value;
     const dobInput = document.getElementById('reg-dob').value;
@@ -1352,6 +1355,8 @@ document.getElementById('volunteer-reg-form').addEventListener('submit', async (
     } catch (error) {
         console.error('Error:', error);
         alert('Server Connection Failed!');
-    }
+    } finally {
+        submitBtn.disabled = false;
+
 });
 
