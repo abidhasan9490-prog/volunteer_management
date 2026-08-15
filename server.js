@@ -91,7 +91,7 @@ app.post('/api/register', registerLimiter, async (req, res) => {
         await newUser.save();
 
         // Verification email পাঠানোর চেষ্টা (ব্যর্থ হলেও registration আটকাবে না — শুধু console-এ warning + fallback link)
-        const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/api/verify-email?token=${verificationToken}`;
+        const verifyUrl = `${process.env.FRONTEND_URL || 'https://volunteer-management-qjdk.onrender.com'}/api/verify-email?token=${verificationToken}`;
         const emailSent = await trySendEmail(emailUtil?.sendVerificationEmail, email, name, verificationToken);
         if (!emailSent) {
             console.log(`📧 [DEV FALLBACK] ${email}-এর ভেরিফিকেশন লিংক (email service সেটআপ না থাকায় এখানে দেখানো হলো):\n${verifyUrl}`);
@@ -178,7 +178,7 @@ app.post('/api/volunteer/resend-verification', emailActionLimiter, async (req, r
         user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
         await user.save();
 
-        const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/api/verify-email?token=${verificationToken}`;
+        const verifyUrl = `${process.env.FRONTEND_URL || 'https://volunteer-management-qjdk.onrender.com'}/api/verify-email?token=${verificationToken}`;
         const emailSent = await trySendEmail(emailUtil?.sendVerificationEmail, email, user.name, verificationToken);
         if (!emailSent) {
             console.log(`📧 [DEV FALLBACK] ${email}-এর নতুন ভেরিফিকেশন লিংক:\n${verifyUrl}`);

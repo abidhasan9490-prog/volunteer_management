@@ -24,7 +24,7 @@ function createTransporter() {
 
 async function sendVerificationEmail(toEmail, name, verificationToken) {
     const transporter = createTransporter();
-    const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/api/verify-email?token=${verificationToken}`;
+    const verifyUrl = `${process.env.FRONTEND_URL || 'https://volunteer-management-qjdk.onrender.com'}/api/verify-email?token=${verificationToken}`;
 
     await transporter.sendMail({
         from: `"Together For Bangladesh" <${process.env.EMAIL_USER}>`,
