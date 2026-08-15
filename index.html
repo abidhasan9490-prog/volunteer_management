@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Together For Bangladesh - Volunteer Platform</title>
+    <!-- Leaflet Open-Source Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!--  Top Bar & Social Media Links -->
+    <div class="top-bar">
+        <div class="top-info">
+            <span><i class="fa-solid fa-envelope"></i> abidhasan9490@gmail.com</span>
+            <span><i class="fa-solid fa-phone"></i> +880 1858-267666</span>
+        </div>
+        <div class="social-links">
+            <a href="#"><i class="fa-brands fa-facebook"></i></a>
+            <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+            <a href="#"><i class="fa-brands fa-youtube"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="logo">⚡ Together For Bangladesh</div>
+        <nav class="nav-links">
+            <a href="#about">About Us</a>
+            <a href="#programs">Programs</a>
+            <a href="#sos-section" class="nav-sos">🚨 Emergency SOS</a>
+            <a href="#gps-section">📍 GPS Search</a>
+            <a href="#ai-section">🤖 AI Matching</a>
+            <a href="#admin-panel-section">🛠️ Admin Panel</a>
+            <a href="#reputation-section">🏆 Leaderboard</a>
+            <a href="#register" class="btn-nav">Join Us</a>
+        </nav>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>দেশ গড়ার কারিগর হোন, Together For Bangladesh-এ যোগ দিন</h1>
+            <p>৬৪ জেলায় ৫,০০০+ ভলান্টিয়ারের সাথে যুক্ত হয়ে সমাজের ইতিবাচক পরিবর্তন আনুন।</p>
+            <div class="hero-btns">
+                <a href="#register" class="btn-primary">ভলান্টিয়ার রেজিস্ট্রেশন</a>
+                <a href="#sos-section" class="btn-danger">🚨 জরুরি SOS রিকোয়েস্ট</a>
+            </div>
+        </div>
+    </section>
+
+    <main class="main-container">
+
+        <!--  🚨 Emergency SOS Request System -->
+        <section id="sos-section" class="card sos-card">
+            <div class="card-header border-red">
+                <h2>🚨 Emergency SOS Request System</h2>
+                <span class="badge-red">Urgent Action</span>
+            </div>
+            <p>দুর্যোগ বা জরুরি পরিস্থিতিতে (রক্তদান, উদ্ধার কাজ) এক ক্লিকে সহায়তা রিকোয়েস্ট পাঠান।</p>
+            
+            <div id="sos-status-box" class="sos-alert-box hidden">
+                <div class="pulse-icon">🚨</div>
+                <div>
+                    <h4 id="sos-status-title">SOS Broadcast Active</h4>
+                    <p id="sos-status-desc">Searching nearby volunteers within 5km radius...</p>
+                </div>
+            </div>
+
+            <form id="sos-form" onsubmit="event.preventDefault(); triggerSOS();">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="sos-category">Emergency Category</label>
+                        <select id="sos-category" required>
+                            <option value="Medical Emergency / Blood Needed">Medical Emergency / Blood Needed</option>
+                            <option value="Flood & Cyclone Relief">Flood & Cyclone Relief</option>
+                            <option value="Accident Rescue Support">Accident Rescue Support</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="sos-volunteers-needed">Required Volunteers</label>
+                        <input type="number" id="sos-volunteers-needed" min="1" max="50" value="5" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="sos-details">Emergency Details</label>
+                    <textarea id="sos-details" rows="2" placeholder="Describe the situation briefly..." required></textarea>
+                </div>
+                <button type="submit" class="btn-sos-trigger"><i class="fa-solid fa-triangle-exclamation"></i> Send One-Click SOS Alert</button>
+            </form>
+        </section>
+
+        <!--  📍 GPS-based Nearby Volunteer Assignment -->
+        <section id="gps-section" class="card">
+            <h2>📍 GPS-based Nearby Volunteer Assignment (Live)</h2>
+            <p>Login করা থাকলে আপনার লাইভ জিপিএস লোকেশন ব্যবহার করে নিকটবর্তী ভলান্টিয়ার automatically ট্র্যাক হবে:</p>
+
+            <div class="map-controls">
+                <button onclick="startLiveLocationTracking()" class="btn-secondary"><i class="fa-solid fa-location-crosshairs"></i> Live Tracking শুরু করুন</button>
+                <button onclick="stopLiveLocationTracking()" class="btn-sm"><i class="fa-solid fa-stop"></i> বন্ধ করুন</button>
+                <span id="location-text">Location Status: Not Fetched</span>
+                <label style="margin-left:10px;">Radius: <input type="number" id="gps-radius-km" value="5" min="1" max="50" style="width:60px;"> km</label>
+            </div>
+
+            <p id="gps-login-notice" style="margin-top:8px; color:#dc2626;">
+                🔒 <strong>Authentic Volunteer-Only ফিচার</strong> — নিকটবর্তী ভলান্টিয়ার দেখতে ও ট্র্যাক করতে
+                <a href="#reputation-section" style="color:#0d9488; text-decoration:underline;">Login করুন</a>। Login করা থাকলে এই সেকশনে এসে "Live Tracking শুরু করুন" চাপুন, বা login করার সাথে সাথেই এটা automatic শুরু হয়ে যাবে।
+            </p>
+            <div id="gps-nearby-list"></div>
+            <div id="gps-nearby-events-list"></div>
+
+            <h3 style="margin-top:20px;">🚨 আপনার এলাকার Active SOS Alert</h3>
+            <div id="sos-alerts-active-list"><p style="color:#94a3b8; font-size:13px;">এখনো কোনো নতুন SOS alert নেই।</p></div>
+
+            <div id="leaflet-map"></div>
+        </section>
+
+        <!--  🤖 AI-based Volunteer Matching -->
+        <section id="ai-section" class="card">
+            <h2>🤖 AI-based Volunteer Matching Engine</h2>
+            <p>NGO/Admin-এর রিকোয়ারমেন্ট (Skills, Experience, Availability & Ratings) বিশ্লেষণ করে AI স্বয়ংক্রিয়ভাবে ভলান্টিয়ার রিকমেন্ড করবে:</p>
+
+            <!-- 🔐 Admin Login Gate — এই টুল ব্যবহার করতে Admin login বাধ্যতামূলক -->
+            <div id="ai-admin-login-box" class="ai-filter-box">
+                <p style="margin-bottom:10px;"><strong>🔒 এই টুলটি Admin-Only।</strong> Volunteer ডেটা দেখতে লগইন করুন:</p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="admin-username">Admin Username</label>
+                        <input type="text" id="admin-username" placeholder="admin">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-password">Admin Password</label>
+                        <input type="password" id="admin-password" placeholder="••••••••">
+                    </div>
+                </div>
+                <button onclick="adminLogin()" class="btn-secondary"><i class="fa-solid fa-lock"></i> Login as Admin</button>
+                <p id="admin-login-error" style="color:#dc2626; margin-top:8px;"></p>
+            </div>
+
+            <div id="ai-matching-panel" class="hidden">
+            <div style="text-align:right; margin-bottom:10px;">
+                <button onclick="adminLogout()" class="btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Admin Logout</button>
+            </div>
+            <div class="ai-filter-box">
+                <div class="form-group">
+                    <label>ইভেন্টের জন্য প্রয়োজনীয় Skill:</label>
+                    <select id="ai-req-skill" onchange="runAIMatchingEngine()">
+                        <option value="medical">Medical & First Aid</option>
+                        <option value="disaster">Disaster & Relief</option>
+                        <option value="education">Teaching & Mentorship</option>
+                        <option value="cleanliness">Climate & Environment</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ন্যূনতম অভিজ্ঞতা (Years):</label>
+                    <select id="ai-req-exp" onchange="runAIMatchingEngine()">
+                        <option value="0">Any Experience</option>
+                        <option value="1">1+ Year</option>
+                        <option value="2">2+ Years</option>
+                    </select>
+                </div>
+            </div>
+
+            <h3>AI Suggested Ranked Volunteers:</h3>
+            <div id="ai-matched-volunteers" class="grid-3">
+                <!-- Dynamically Generated -->
+            </div>
+            </div><!-- /#ai-matching-panel -->
+        </section>
+
+        <!--  🛠️ Admin Panel — Volunteer Management & SOS Requests -->
+        <section id="admin-panel-section" class="card hidden">
+            <h2>🛠️ Admin Panel</h2>
+            <p>Admin Login থাকলেই এই প্যানেল দেখা যাবে (উপরের AI Matching সেকশনে লগইন করুন)।</p>
+
+            <h3>📋 সব ভলান্টিয়ার</h3>
+            <div id="admin-volunteers-list"></div>
+
+            <h3 style="margin-top:30px;">🚨 SOS Requests</h3>
+            <div id="admin-sos-list"></div>
+
+            <h3 style="margin-top:30px;">📅 ইভেন্ট তৈরি করুন</h3>
+            <div class="ai-filter-box">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="event-name">ইভেন্টের নাম</label>
+                        <input type="text" id="event-name" placeholder="যেমনঃ রক্তদান ক্যাম্প">
+                    </div>
+                    <div class="form-group">
+                        <label for="event-datetime">তারিখ ও সময়</label>
+                        <input type="datetime-local" id="event-datetime">
+                    </div>
+                    <div class="form-group">
+                        <label for="event-radius">Radius (কিমি) — এর মধ্যে থাকা volunteer-রাই দেখতে পাবে</label>
+                        <input type="number" id="event-radius" value="5" min="1" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="event-description">বিবরণ</label>
+                        <input type="text" id="event-description" placeholder="ইভেন্ট সম্পর্কে সংক্ষেপে লিখুন">
+                    </div>
+                </div>
+                <input type="hidden" id="event-latitude">
+                <input type="hidden" id="event-longitude">
+                <button type="button" onclick="captureEventLocation()" class="btn-secondary"><i class="fa-solid fa-location-crosshairs"></i> ইভেন্টের লোকেশন ক্যাপচার করুন</button>
+                <p id="event-location-status" style="margin:8px 0; color:#64748b;">এখনো লোকেশন ক্যাপচার করা হয়নি</p>
+                <button onclick="createEvent()" class="btn-primary">➕ ইভেন্ট তৈরি করুন</button>
+            </div>
+
+            <h3 style="margin-top:20px;">📋 সব ইভেন্ট</h3>
+            <div id="admin-events-list"></div>
+        </section>
+
+        <!--  🏆 Volunteer Reputation (Points, Badges, Certificates) -->
+        <section id="reputation-section" class="card">
+            <h2>🏆 Volunteer Reputation, Points & Dynamic Certificate</h2>
+
+            <!-- 🔐 Volunteer Login Gate — নিজের প্রোফাইল/সার্টিফিকেট দেখতে লগইন লাগবে -->
+            <div id="volunteer-login-box" class="ai-filter-box">
+                <p style="margin-bottom:10px;"><strong>🔒 নিজের প্রোফাইল, পয়েন্ট ও সার্টিফিকেট দেখতে লগইন করুন:</strong></p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="volunteer-email">Email</label>
+                        <input type="email" id="volunteer-email" placeholder="example@mail.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="volunteer-password">Password</label>
+                        <input type="password" id="volunteer-password" placeholder="••••••••">
+                    </div>
+                </div>
+                <button onclick="volunteerLogin()" class="btn-secondary"><i class="fa-solid fa-lock"></i> Login</button>
+                <button onclick="showForgotPasswordForm()" class="btn-sm" style="margin-left:8px;">পাসওয়ার্ড ভুলে গেছেন?</button>
+                <p id="volunteer-login-error" style="color:#dc2626; margin-top:8px;"></p>
+                <button id="resend-verification-btn" onclick="resendVerificationEmail()" class="btn-sm hidden" style="margin-top:6px;">📧 Resend Verification Email</button>
+            </div>
+
+            <!-- 🔑 Forgot Password ফ্লো — দুই স্টেপ: (১) ইমেইল দিয়ে কোড রিকোয়েস্ট, (২) কোড + নতুন পাসওয়ার্ড দিয়ে রিসেট -->
+            <div id="forgot-password-box" class="ai-filter-box hidden">
+                <h4>🔑 পাসওয়ার্ড রিসেট</h4>
+                <div class="form-group">
+                    <label for="forgot-email">আপনার Email</label>
+                    <input type="email" id="forgot-email" placeholder="example@mail.com">
+                </div>
+                <button onclick="requestPasswordReset()" class="btn-secondary">রিসেট কোড পাঠান</button>
+                <p id="forgot-password-status" style="margin-top:8px;"></p>
+
+                <div id="reset-password-form" class="hidden" style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:15px;">
+                    <div class="form-group">
+                        <label for="reset-token">রিসেট কোড (ইমেইলে বা সার্ভার কনসোলে পাবেন)</label>
+                        <input type="text" id="reset-token" placeholder="৮-ক্যারেক্টার কোড">
+                    </div>
+                    <div class="form-group">
+                        <label for="reset-new-password">নতুন পাসওয়ার্ড</label>
+                        <input type="password" id="reset-new-password" placeholder="কমপক্ষে ৬ ক্যারেক্টার">
+                    </div>
+                    <button onclick="submitPasswordReset()" class="btn-primary">পাসওয়ার্ড রিসেট করুন</button>
+                </div>
+                <button onclick="hideForgotPasswordForm()" class="btn-sm" style="margin-top:10px;">বাতিল করুন</button>
+            </div>
+
+            <div id="volunteer-profile-panel" class="hidden">
+            <div style="text-align:right; margin-bottom:10px;">
+                <button onclick="volunteerLogout()" class="btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+            <div class="reputation-grid">
+                <!-- Profile Card -->
+                <div class="profile-card">
+                    <div class="avatar" id="profile-avatar-icon"><i class="fa-solid fa-user-shield"></i></div>
+                    <img id="profile-pic-display" class="hidden" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin:0 auto;">
+                    <h3 id="profile-display-name">—</h3>
+                    <p class="role" id="profile-district">—</p>
+                    <div class="points-badge">
+                        <span>Total Points:</span> <strong id="user-points">0</strong> XP
+                    </div>
+                    <div class="star-rating">
+                        <span id="profile-rating-stars">★★★★★</span> <span id="profile-rating-text">(0 Rating from 0 Campaigns)</span>
+                    </div>
+                    <p id="profile-rank-text" style="margin-top:8px; font-weight:bold; color:#0d9488;"></p>
+                </div>
+
+                <!-- Achievements & Badges -->
+                <div class="badges-box">
+                    <h3>Unlocked Badges</h3>
+                    <div class="badges-list" id="profile-badges-list">
+                        <p style="color:#94a3b8; font-size:13px;">এখনো কোনো badge অর্জিত হয়নি — Admin task complete মার্ক করলে badge আনলক হবে।</p>
+                    </div>
+                    
+                    <div class="cert-download-area">
+                        <h4>Activity Verification Certificate</h4>
+                        <p>১০০০ XP অর্জন করলে আপনার নাম ও পয়েন্টের ভেরিফায়েড পিডিএফ ডাউনলোড করতে পারবেন:</p>
+                        <button onclick="downloadPDFCertificate()" class="btn-cert"><i class="fa-solid fa-file-pdf"></i> Download PDF Certificate</button>
+                    </div>
+                </div>
+            </div>
+            </div><!-- /#volunteer-profile-panel -->
+
+            <!-- Leaderboard -->
+
+            <div class="leaderboard-container">
+                <h3>Top Active Volunteers (Leaderboard)</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Volunteer Name</th>
+                            <th>District</th>
+                            <th>Completed Tasks</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!--  Volunteer Registration Form -->
+        <section id="register" class="card">
+            <h2> Volunteer Registration</h2>
+            <form id="volunteer-reg-form" onsubmit="event.preventDefault();">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="reg-profile-pic">প্রোফাইল ছবি (Profile Picture)</label>
+                        <input type="file" id="reg-profile-pic" accept="image/*" onchange="handleProfilePicSelect(event)">
+                        <img id="reg-profile-pic-preview" class="hidden" style="width:80px; height:80px; border-radius:50%; margin-top:8px; object-fit:cover;">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-name">পূর্ণ নাম (Full Name)</label>
+                        <input type="text" id="reg-name" placeholder="আপনার নাম লিখুন" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">ইমেইল (Email)</label>
+                        <input type="email" id="reg-email" placeholder="example@mail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">পাসওয়ার্ড (Password)</label>
+                        <input type="password" id="reg-password" placeholder="কমপক্ষে ৬ ক্যারেক্টার" minlength="6" required>
+                    </div>
+                    <!-- Phone Number Field -->
+<div class="form-group">
+    <label for="reg-phone">ফোন নম্বর (Phone Number)</label>
+    <input type="tel" id="reg-phone" placeholder="017XXXXXXXX" required>
+</div>
+
+<!-- Blood Group Field -->
+<div class="form-group">
+    <label for="reg-blood-group">রক্তের গ্রুপ (Blood Group)</label>
+    <select id="reg-blood-group">
+        <option value="">রক্তের গ্রুপ নির্বাচন করুন</option>
+        <option value="A+">A+</option>
+        <option value="A-">A-</option>
+        <option value="B+">B+</option>
+        <option value="B-">B-</option>
+        <option value="O+">O+</option>
+        <option value="O-">O-</option>
+        <option value="AB+">AB+</option>
+        <option value="AB-">AB-</option>
+    </select>
+</div>
+                    <div class="form-group">
+                        <label for="reg-dob">জন্ম তারিখ (Eligibility Verification)</label>
+                        <input type="date" id="reg-dob" required>
+                        <small id="age-msg">বয়স অবশ্যই ন্যূনতম ১৫ বছর হতে হবে।</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-district">জেলা (District)</label>
+                        <select id="reg-district" required>
+                            <option value="">জেলা নির্বাচন করুন</option>
+                            <option value="Bogura">বগুড়া (Bogura)</option>
+                            <option value="Dhaka">ঢাকা (Dhaka)</option>
+                            <option value="Rangpur">রংপুর (Rangpur)</option>
+                            <option value="Dinajpur">দিনাজপুর (Dinajpur)</option>
+                            <option value="Chittagong">চট্টগ্রাম (Chittagong)</option>
+                            <option value="Rajshahi">রাজশাহী (Rajshahi)</option>
+                            <option value="Barishal">বরিশাল (Barishal)</option>
+                            <option value="Feni">ফেনী (Feni)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-doc">Student ID / NID / Passport Document</label>
+                        <input type="file" id="reg-doc" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-skill">প্রাথমিক স্কিল (Primary Skill)</label>
+                        <select id="reg-skill" required>
+                            <option value="medical">Medical & First Aid</option>
+                            <option value="disaster">Disaster & Relief</option>
+                            <option value="education">Education & Teaching</option>
+                            <option value="cleanliness">Climate & Environment</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-experience">অভিজ্ঞতা (Years of Experience)</label>
+                        <input type="number" id="reg-experience" min="0" max="50" value="0" placeholder="যেমনঃ ২" required>
+                    </div>
+                </div>
+
+                <!-- 📍 GPS Location Capture — Nearby Volunteer ফিচারের জন্য বাধ্যতামূলক -->
+                <div class="form-group" style="margin-top:10px;">
+                    <label>আপনার লোকেশন (GPS Location) <span style="color:#dc2626;">*আবশ্যক</span></label>
+                    <input type="hidden" id="reg-latitude">
+                    <input type="hidden" id="reg-longitude">
+                    <button type="button" onclick="captureRegistrationLocation()" class="btn-secondary">
+                        <i class="fa-solid fa-location-crosshairs"></i> লোকেশন ক্যাপচার করুন
+                    </button>
+                    <p id="reg-location-status" style="margin-top:6px; font-size:14px; color:#64748b;">এখনো লোকেশন ক্যাপচার করা হয়নি</p>
+                </div>
+
+                <button type="submit" class="btn-primary">আবেদন জমা দিন (Submit Application)</button>
+            </form>
+        </section>
+
+        <!--  Join Us / Application Process -->
+        <section class="card">
+            <h2> Join Us / Application Process</h2>
+            <div class="process-steps">
+                <div class="step">
+                    <div class="step-num">১</div>
+                    <h4>অনলাইন ফর্ম পূরণ</h4>
+                    <p>ব্যক্তিগত তথ্য ও ন্যূনতম ১৫ বছর বয়স নিশ্চিত করে রেজিস্ট্রেশন করুন।</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">২</div>
+                    <h4>ডকুমেন্ট ভেরিফিকেশন</h4>
+                    <p>NID, Student ID বা পাসপোর্ট আপলোড করুন।</p>
+                </div>
+                <div class="step">
+                    <div class="step-num">৩</div>
+                    <h4>ওরিয়েন্টেশন ও ব্যাজ</h4>
+                    <p>অনলাইন ওরিয়েন্টেশন শেষে আপনার আইডি ও ভলান্টিয়ার ব্যাজ পান।</p>
+                </div>
+            </div>
+        </section>
+
+        <!--  Programs Section -->
+        <section id="programs" class="card">
+            <h2> Our Key Programs</h2>
+            <div class="grid-3">
+                <div class="program-card">
+                    <i class="fa-solid fa-graduation-cap icon"></i>
+                    <h3>Education</h3>
+                    <p>বঞ্চিত শিশুদের জন্য মানসম্মত শিক্ষা ও বই বিতরণ কার্যক্রম।</p>
+                </div>
+                <div class="program-card">
+                    <i class="fa-solid fa-cloud-sun-rain icon"></i>
+                    <h3>Climate Change</h3>
+                    <p>বৃক্ষরোপণ ও প্লাস্টিক দূষণমুক্ত পরিবেশ অভিযান।</p>
+                </div>
+                <div class="program-card">
+                    <i class="fa-solid fa-users icon"></i>
+                    <h3>Youth Development</h3>
+                    <p>তরুণদের লিডারশিপ ও স্কিল ডেভেলপমেন্ট ট্রেনিং।</p>
+                </div>
+                <div class="program-card">
+                    <i class="fa-solid fa-person-breastfeeding icon"></i>
+                    <h3>Women Empowerment</h3>
+                    <p>নারী অধিকার ও আত্মনির্ভরশীলতা বৃদ্ধি প্রকল্প।</p>
+                </div>
+                <div class="program-card">
+                    <i class="fa-solid fa-heart-pulse icon"></i>
+                    <h3>Healthcare</h3>
+                    <p>ফ্রি মেডিকেল ক্যাম্প ও রক্তদান কর্মসূচি।</p>
+                </div>
+                <div class="program-card">
+                    <i class="fa-solid fa-scale-balanced icon"></i>
+                    <h3>Good Governance</h3>
+                    <p>সচেতনতা তৈরি ও নাগরিক অধিকার রক্ষা।</p>
+                </div>
+            </div>
+        </section>
+
+        <!--  Regional Activities & 7. Campaign Information -->
+        <section class="card">
+            <h2> Regional Activities & Ongoing Campaigns</h2>
+            <div class="grid-2">
+                <div class="activity-card">
+                    <span class="tag">Bogura District</span>
+                    <h3>মোকামতলা পরিচ্ছন্ন ও বৃক্ষরোপণ অভিযান</h3>
+                    <p><i class="fa-solid fa-calendar"></i> ১০ আগস্ট | <i class="fa-solid fa-location-dot"></i> শিবগঞ্জ, বগুড়া</p>
+                    <p>পরিবেশ পরিচ্ছন্নতা ও বৃক্ষরোপণ সচেতনতা ক্যাম্পেইন।</p>
+                </div>
+                <div class="activity-card">
+                    <span class="tag">Dhaka District</span>
+                    <h3>জরুরি রক্তদান ও স্বাস্থ্যসেবা ক্যাম্প</h3>
+                    <p><i class="fa-solid fa-calendar"></i> ১৫ আগস্ট | <i class="fa-solid fa-location-dot"></i> ঢাকা কেন্দ্র</p>
+                    <p>মেডিকেল টিম ও জরুরি রক্তদান সাপোর্ট।</p>
+                </div>
+            </div>
+        </section>
+
+        <!--  Success Stories -->
+        <section class="card">
+            <h2> Success Stories & Impact</h2>
+            <div class="grid-2">
+                <div class="story-card">
+                    <h3>প্রজেক্ট 'আলোর পাঠশালা'</h3>
+                    <p><strong>উপকৃত জনসংখ্যা:</strong> ১২,০০০+ শিশু</p>
+                    <p>গ্রামীণ অঞ্চলের শিক্ষার্থীদের ডিজিটাল শিক্ষা সামগ্রী প্রদান করা হয়েছে।</p>
+                    <button class="btn-sm" onclick="alert('ক্যাম্পেইন সফলভাবে সম্পন্ন হয়েছে!')">Learn More</button>
+                </div>
+                <div class="story-card">
+                    <h3>প্রজেক্ট 'সবুজ বাংলাদেশ'</h3>
+                    <p><strong>উপকৃত জনসংখ্যা:</strong> ৫০,০০০+ নাগরিক</p>
+                    <p>এক মাসে ১ লক্ষ বৃক্ষরোপণ সম্পন্ন করা হয়েছে।</p>
+                    <button class="btn-sm" onclick="alert('ক্যাম্পেইন সফলভাবে সম্পন্ন হয়েছে!')">Learn More</button>
+                </div>
+            </div>
+        </section>
+
+        <!--  About Us &  Volunteer Benefits -->
+        <section id="about" class="card">
+            <div class="grid-2">
+                <div>
+                    <h2> About Us</h2>
+                    <p>আমরা "Together For Bangladesh" এর মাধ্যমে তরুণদের সাথে নিয়ে সমাজের উন্নয়ন ও সামাজিক সেবা প্রদান করতে প্রতিশ্রুতিবদ্ধ।</p>
+                    <ul class="info-list">
+                        <li><strong>Mission:</strong> স্বেচ্ছাসেবায় তরুণদের ভূমিকা বৃদ্ধি করা।</li>
+                        <li><strong>Vision:</strong> একটি বৈষম্যহীন ও স্বাবলম্বী বাংলাদেশ।</li>
+                        <li><strong>Impact:</strong> ৬৪ জেলায় নেটওয়ার্ক বিস্তার।</li>
+                        <li><strong>Network:</strong> ৫,০০০+ রেজিস্টার্ড সক্রিয় ভলান্টিয়ার।</li>
+                    </ul>
+                </div>
+                <div>
+                    <h2> Volunteer Benefits</h2>
+                    <ul class="benefits-list">
+                        <li><i class="fa-solid fa-check-circle"></i> বাস্তব ক্ষেত্রে Leadership তৈরির সুযোগ</li>
+                        <li><i class="fa-solid fa-check-circle"></i> প্রফেশনাল স্কিল (Communication & Management) অর্জনকরণ</li>
+                        <li><i class="fa-solid fa-check-circle"></i> ভেরিফায়েড ডিজিটাল সার্টিফিকেট ও ব্যাজ</li>
+                        <li><i class="fa-solid fa-check-circle"></i> জাতীয় নেটওয়ার্কের সদস্য হওয়া</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!--  Contact System -->
+        <section class="card">
+            <h2> Contact System & Regional Offices</h2>
+            <div class="grid-2">
+                <div>
+                    <h4>Contact Us</h4>
+                    <form onsubmit="event.preventDefault(); alert('ধন্যবাদ! আপনার বার্তাটি পাঠানো হয়েছে।');">
+                        <div class="form-group">
+                            <input type="text" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea rows="3" placeholder="Message..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary">Send Message</button>
+                    </form>
+                </div>
+                <div>
+                    <h4>Head Office & Regional Locations</h4>
+                    <p><i class="fa-solid fa-building"></i> <strong>Head Office:</strong> Mokamtola, Shibganj, Bogura</p>
+                    <p><i class="fa-solid fa-phone"></i> <strong>Phone:</strong> +880 1858-267666</p>
+                    <p><i class="fa-solid fa-envelope"></i> <strong>Email:</strong> abidhasan9490@gmail.com</p>
+                    <hr style="margin: 10px 0;">
+                    <p><strong>Regional Office Locations:</strong> Dhaka, Rangpur, Dinajpur, Chittagong, Rajshahi, Barishal, Feni</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Together For Bangladesh. All rights reserved.</p>
+    </footer>
+
+    <!-- Leaflet Map JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- html2pdf JS for PDF Certificate Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Main JavaScript Logic -->
+    <script src="script.js"></script>
+</body>
+</html>
