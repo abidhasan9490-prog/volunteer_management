@@ -1015,9 +1015,57 @@ function volunteerLogout() {
     loggedInVolunteer = null;
     document.getElementById('volunteer-login-box').classList.remove('hidden');
     document.getElementById('volunteer-profile-panel').classList.add('hidden');
+     updateQuickLoginUI(user); // 👈 উপরের card-ও sync রাখা
     document.getElementById('volunteer-email').value = '';
     document.getElementById('volunteer-password').value = '';
     stopLiveLocationTracking(); // 👈 লগআউট করলে লোকেশন ট্র্যাকিং বন্ধ হয়ে যাবে
+}
+  // উপরের Quick Login card-ও reset করা
+    document.getElementById('quick-login-form-box').classList.remove('hidden');
+    document.getElementById('quick-login-success-box').classList.add('hidden');
+    document.getElementById('quick-login-email').value = '';
+    document.getElementById('quick-login-password').value = '';
+}
+
+// ====================================================
+// 🔐 Quick Login (Homepage-এর উপরের card) — SOS section-এর ঠিক আগে
+// ====================================================
+
+async function quickLogin() {
+    const email = document.getElementById('quick-login-email').value;
+    const password = document.getElementById('quick-login-password').value;
+    const errorBox = document.getElementById('quick-login-error');
+    errorBox.innerText = '';
+
+    try {
+        const response = await fetch(`${API_BASE}/api/volunteer/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            localStorage.setItem('volunteerToken', result.token);
+            await loadVolunteerProfile();
+        } else {
+            errorBox.innerText = '❌ ' + result.error;
+            if (result.needsVerification) {
+                document.getElementById('volunteer-email').value = email;
+                document.getElementById('resend-verification-btn').classList.remove('hidden');
+            }
+        }
+    } catch (error) {
+        console.error('Quick Login Error:', error);
+        errorBox.innerText = '❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।';
+    }
+}
+
+function updateQuickLoginUI(user) {
+    document.getElementById('quick-login-form-box').classList.add('hidden');
+    document.getElementById('quick-login-success-box').classList.remove('hidden');
+    document.getElementById('quick-login-name').innerText = user.name;
 }
 
 // লগইন করা ভলান্টিয়ারের real প্রোফাইল ডেটা এনে UI আপডেট করা (Profile + Rank)
