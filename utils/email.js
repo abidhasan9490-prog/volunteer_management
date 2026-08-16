@@ -1,36 +1,44 @@
 // ==========================================================
-// 📧 Email পাঠানোর Utility — nodemailer ব্যবহার করে
-//
-// ⚠️ গুরুত্বপূর্ণ: এই ফাইল কাজ করার জন্য দুটো জিনিস লাগবে —
-// ১. তোমার নিজের কম্পিউটারে চালাও: npm install nodemailer
-//    (এই sandbox-এ internet নেই, তাই এখানে install করা সম্ভব হয়নি)
-// ২. .env ফাইলে নিজের real credential বসাও:
-//    EMAIL_USER=your_email@gmail.com
-//    EMAIL_PASS=your_16_digit_gmail_app_password  (সাধারণ Gmail password না, App Password লাগবে)
-//    Gmail App Password বানানোর নিয়ম: Google Account → Security → 2-Step Verification → App Passwords
+// 📧 Email পাঠানোর Utility — Brevo (আগের নাম Sendinblue) API ব্যবহার করে
 // ==========================================================
 
-const nodemailer = require('nodemailer'); // 👈 এই sandbox-এ install করা নেই, কিন্তু নিচে lazy-load করে handle করা হয়েছে
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
-function createTransporter() {
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
+async function sendViaBrevo({ toEmail, toName, subject, htmlContent }) {
+    const response = await fetch(BREVO_API_URL, {
+        method: 'POST',
+        headers: {
+            'accept': 'application/json',
+            'api-key': process.env.BREVO_API_KEY,
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            sender: {
+                name: 'Together For Bangladesh',
+                email: process.env.BREVO_SENDER_EMAIL
+            },
+            to: [{ email: toEmail, name: toName }],
+            subject,
+            htmlContent
+        })
     });
+
+    if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`Brevo API error (${response.status}): ${errorBody}`);
+    }
+
+    return response.json();
 }
 
 async function sendVerificationEmail(toEmail, name, verificationToken) {
-    const transporter = createTransporter();
-    const verifyUrl = `${process.env.FRONTEND_URL || 'https://volunteer-management-qjdk.onrender.com'}/api/verify-email?token=${verificationToken}`;
+    const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/api/verify-email?token=${verificationToken}`;
 
-    await transporter.sendMail({
-        from: `"Together For Bangladesh" <${process.env.EMAIL_USER}>`,
-        to: toEmail,
+    await sendViaBrevo({
+        toEmail,
+        toName: name,
         subject: 'আপনার Email Verify করুন — Together For Bangladesh',
-        html: `
+        htmlContent: `
             <div style="font-family: Arial, sans-serif; padding: 20px;">
                 <h2 style="color: #0d9488;">স্বাগতম, ${name}!</h2>
                 <p>Together For Bangladesh-এ রেজিস্ট্রেশনের জন্য ধন্যবাদ। আপনার email verify করতে নিচের বাটনে ক্লিক করুন:</p>
@@ -44,13 +52,11 @@ async function sendVerificationEmail(toEmail, name, verificationToken) {
 }
 
 async function sendPasswordResetEmail(toEmail, name, resetToken) {
-    const transporter = createTransporter();
-
-    await transporter.sendMail({
-        from: `"Together For Bangladesh" <${process.env.EMAIL_USER}>`,
-        to: toEmail,
+    await sendViaBrevo({
+        toEmail,
+        toName: name,
         subject: 'পাসওয়ার্ড রিসেট কোড — Together For Bangladesh',
-        html: `
+        htmlContent: `
             <div style="font-family: Arial, sans-serif; padding: 20px;">
                 <h2 style="color: #0d9488;">প্রিয় ${name},</h2>
                 <p>আপনার পাসওয়ার্ড রিসেট করার জন্য নিচের কোডটি ওয়েবসাইটে গিয়ে ব্যবহার করুন:</p>
