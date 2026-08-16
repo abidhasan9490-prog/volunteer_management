@@ -895,40 +895,10 @@ function checkVolunteerSession() {
     }
 }
 
-async function volunteerLogin() {
-    const email = document.getElementById('volunteer-email').value;
-    const password = document.getElementById('volunteer-password').value;
-    const errorBox = document.getElementById('volunteer-login-error');
-    const resendBtn = document.getElementById('resend-verification-btn');
-    errorBox.innerText = '';
-    resendBtn.classList.add('hidden');
 
-    try {
-        const response = await fetch(`${API_BASE}/api/volunteer/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            localStorage.setItem('volunteerToken', result.token);
-            await loadVolunteerProfile();
-        } else {
-            errorBox.innerText = '❌ ' + result.error;
-            if (result.needsVerification) {
-                resendBtn.classList.remove('hidden'); // 👈 email verify করা না থাকলে Resend বাটন দেখানো
-            }
-        }
-    } catch (error) {
-        console.error('Volunteer Login Error:', error);
-        errorBox.innerText = '❌ Server-এর সাথে যোগাযোগ করা যাচ্ছে না।';
-    }
-}
 
 async function resendVerificationEmail() {
-    const email = document.getElementById('volunteer-email').value;
+    const email = document.getElementById('quick-login-email').value;
     if (!email) {
         alert('⚠️ প্রথমে Email ফিল্ডে আপনার ইমেইল লিখুন।');
         return;
@@ -1013,11 +983,9 @@ async function submitPasswordReset() {
 function volunteerLogout() {
     localStorage.removeItem('volunteerToken');
     loggedInVolunteer = null;
-    document.getElementById('volunteer-login-box').classList.remove('hidden');
+    document.getElementById('reputation-login-prompt').classList.remove('hidden');
     document.getElementById('volunteer-profile-panel').classList.add('hidden');
      updateQuickLoginUI(user); // 👈 উপরের card-ও sync রাখা
-    document.getElementById('volunteer-email').value = '';
-    document.getElementById('volunteer-password').value = '';
     stopLiveLocationTracking(); // 👈 লগআউট করলে লোকেশন ট্র্যাকিং বন্ধ হয়ে যাবে
 }
   // উপরের Quick Login card-ও reset করা
@@ -1025,7 +993,7 @@ function volunteerLogout() {
     document.getElementById('quick-login-success-box').classList.add('hidden');
     document.getElementById('quick-login-email').value = '';
     document.getElementById('quick-login-password').value = '';
-}
+
 
 // ====================================================
 // 🔐 Quick Login (Homepage-এর উপরের card) — SOS section-এর ঠিক আগে
@@ -1052,7 +1020,7 @@ async function quickLogin() {
         } else {
             errorBox.innerText = '❌ ' + result.error;
             if (result.needsVerification) {
-                document.getElementById('volunteer-email').value = email;
+                
                 document.getElementById('resend-verification-btn').classList.remove('hidden');
             }
         }
@@ -1113,14 +1081,14 @@ async function loadVolunteerProfile() {
 
         if (profileResponse.status === 401) {
             volunteerLogout();
-            document.getElementById('volunteer-login-error').innerText = '⚠️ সেশনের মেয়াদ শেষ, আবার লগইন করুন।';
+            document.getElementById('quick-login-error').innerText = '⚠️ সেশনের মেয়াদ শেষ, আবার লগইন করুন।';
             return;
         }
 
         const user = await profileResponse.json();
         loggedInVolunteer = user; // পুরো real profile object সেভ করে রাখা (Certificate-এ কাজে লাগবে)
 
-        document.getElementById('volunteer-login-box').classList.add('hidden');
+        document.getElementById('reputation-login-prompt').classList.add('hidden');
         document.getElementById('volunteer-profile-panel').classList.remove('hidden');
 
         document.getElementById('profile-display-name').innerText = user.name;

@@ -57,6 +57,77 @@
 
     <main class="main-container">
 
+       <main class="main-container">
+
+        <!--  🔐 Quick Login — SOS section-এর ঠিক আগে, পেজে ঢুকেই দেখা যাবে -->
+        <section id="quick-login-section" class="card quick-login-card">
+            <div id="quick-login-form-box">
+                <div class="quick-login-header">
+                    <div class="quick-login-icon"><i class="fa-solid fa-user-shield"></i></div>
+                    <div>
+                        <h2>ভলান্টিয়ার লগইন</h2>
+                        <p>SOS রিসপন্স করতে বা প্রোফাইল দেখতে লগইন করুন</p>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="quick-login-email">Email</label>
+                        <input type="email" id="quick-login-email" placeholder="example@mail.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="quick-login-password">Password</label>
+                        <input type="password" id="quick-login-password" placeholder="••••••••">
+                    </div>
+                </div>
+                <div class="quick-login-actions">
+                    <button onclick="quickLogin()" class="btn-primary"><i class="fa-solid fa-right-to-bracket"></i> লগইন করুন</button>
+                    <a href="#register" class="quick-login-link">নতুন? রেজিস্ট্রেশন করুন</a>
+                    <button onclick="showForgotPasswordForm()" class="quick-login-link-btn">পাসওয়ার্ড ভুলে গেছেন?</button>
+                </div>
+                <p id="quick-login-error" class="quick-login-error"></p>
+                 <button id="resend-verification-btn" onclick="resendVerificationEmail()" class="quick-login-link-btn hidden" style="display:block; margin-top:8px;">📧 Resend Verification Email</button>
+            </div>
+
+            <div id="quick-login-success-box" class="hidden quick-login-success">
+                <div class="quick-login-icon success"><i class="fa-solid fa-circle-check"></i></div>
+                <div>
+                    <h3>স্বাগতম, <span id="quick-login-name"></span>! ✅</h3>
+                    <p>আপনি লগইন করা আছেন — এখন SOS-এ সাড়া দিতে বা প্রোফাইল দেখতে পারবেন।</p>
+                    <div class="quick-login-actions">
+                        <a href="#reputation-section" class="btn-secondary">প্রোফাইল দেখুন</a>
+                        <button onclick="volunteerLogout()" class="quick-login-link-btn">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+          <!-- 🔑 Forgot Password ফ্লো — Quick Login card-এর ঠিক নিচে -->
+        <div id="forgot-password-box" class="card hidden">
+            <h4>🔑 পাসওয়ার্ড রিসেট</h4>
+            <div class="form-group">
+                <label for="forgot-email">আপনার Email</label>
+                <input type="email" id="forgot-email" placeholder="example@mail.com">
+            </div>
+            <button onclick="requestPasswordReset()" class="btn-secondary">রিসেট কোড পাঠান</button>
+            <p id="forgot-password-status" style="margin-top:8px;"></p>
+
+            <div id="reset-password-form" class="hidden" style="margin-top:15px; border-top:1px solid #e2e8f0; padding-top:15px;">
+                <div class="form-group">
+                    <label for="reset-token">রিসেট কোড (ইমেইলে বা সার্ভার কনসোলে পাবেন)</label>
+                    <input type="text" id="reset-token" placeholder="৮-ক্যারেক্টার কোড">
+                </div>
+                <div class="form-group">
+                    <label for="reset-new-password">নতুন পাসওয়ার্ড</label>
+                    <input type="password" id="reset-new-password" placeholder="কমপক্ষে ৬ ক্যারেক্টার">
+                </div>
+                <button onclick="submitPasswordReset()" class="btn-primary">পাসওয়ার্ড রিসেট করুন</button>
+            </div>
+            <button onclick="hideForgotPasswordForm()" class="btn-sm" style="margin-top:10px;">বাতিল করুন</button>
+        </div>
+
+        <!--  🚨 Emergency SOS Request System -->
+        <section id="sos-section" class="card sos-card">
+       
         <!--  🚨 Emergency SOS Request System -->
         <section id="sos-section" class="card sos-card">
             <div class="card-header border-red">
@@ -221,31 +292,10 @@
             <h2>🏆 Volunteer Reputation, Points & Dynamic Certificate</h2>
 
             <!-- 🔐 Volunteer Login Gate — নিজের প্রোফাইল/সার্টিফিকেট দেখতে লগইন লাগবে -->
-            <div id="volunteer-login-box" class="ai-filter-box">
-                <p style="margin-bottom:10px;"><strong>🔒 নিজের প্রোফাইল, পয়েন্ট ও সার্টিফিকেট দেখতে লগইন করুন:</strong></p>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="volunteer-email">Email</label>
-                        <input type="email" id="volunteer-email" placeholder="example@mail.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="volunteer-password">Password</label>
-                        <input type="password" id="volunteer-password" placeholder="••••••••">
-                    </div>
-                </div>
-                <button onclick="volunteerLogin()" class="btn-secondary"><i class="fa-solid fa-lock"></i> Login</button>
-                <button onclick="showForgotPasswordForm()" class="btn-sm" style="margin-left:8px;">পাসওয়ার্ড ভুলে গেছেন?</button>
-                <p id="volunteer-login-error" style="color:#dc2626; margin-top:8px;"></p>
-                <button id="resend-verification-btn" onclick="resendVerificationEmail()" class="btn-sm hidden" style="margin-top:6px;">📧 Resend Verification Email</button>
+<!-- 🔐 Login prompt — আসল login form এখন উপরের Quick Login card-এ -->
+            <div id="reputation-login-prompt" class="ai-filter-box">
+                <p>🔒 নিজের প্রোফাইল, পয়েন্ট ও সার্টিফিকেট দেখতে <a href="#quick-login-section" style="color:#0d9488; text-decoration:underline; font-weight:700;">উপরে গিয়ে লগইন করুন</a>।</p>
             </div>
-
-            <!-- 🔑 Forgot Password ফ্লো — দুই স্টেপ: (১) ইমেইল দিয়ে কোড রিকোয়েস্ট, (২) কোড + নতুন পাসওয়ার্ড দিয়ে রিসেট -->
-            <div id="forgot-password-box" class="ai-filter-box hidden">
-                <h4>🔑 পাসওয়ার্ড রিসেট</h4>
-                <div class="form-group">
-                    <label for="forgot-email">আপনার Email</label>
-                    <input type="email" id="forgot-email" placeholder="example@mail.com">
-                </div>
                 <button onclick="requestPasswordReset()" class="btn-secondary">রিসেট কোড পাঠান</button>
                 <p id="forgot-password-status" style="margin-top:8px;"></p>
 
