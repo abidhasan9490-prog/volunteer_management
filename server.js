@@ -364,6 +364,40 @@ app.get('/api/leaderboard/my-rank', requireVolunteer, async (req, res) => {
 // 🚨 Emergency SOS Request — এখন সত্যিকারের ডেটাবেসে সেভ হয়
 // (optionalAuth: লগইন থাকলে identity যুক্ত হবে, না থাকলে Guest হিসেবে চলবে)
 // ==========================================================
+// 🚨 SOS তৈরি হওয়ার পর radius-এর মধ্যে থাকা volunteer-দের email পাঠানো (background-এ, response আটকে রাখবে না)
+async function notifyNearbyVolunteersBySosEmail(sos) {
+    try {
+        const radiusKm = 5; // ফিক্সড ৫ কিমি
+        const [sosLng, sosLat] = sos.location.coordinates;
+
+        const allVolunteers = await User.find({});
+
+        const nearbyVolunteers = allVolunteers.filter(vol => {
+            if (sos.requestedBy && vol._id.toString() === sos.requestedBy.toString()) return false;
+            const [volLng, volLat] = vol.location.coordinates;
+            if (volLng === 0 && volLat === 0) return false;
+            return haversineDistanceKm(sosLat, sosLng, volLat, volLng) <= radiusKm;
+        });
+
+        console.log(`📧 SOS notification পাঠানো হচ্ছে ${nearbyVolunteers.length} জন volunteer-কে...`);
+
+        for (const vol of nearbyVolunteers) {
+            const [volLng, volLat] = vol.location.coordinates;
+            const distanceKm = Math.round(haversineDistanceKm(sosLat, sosLng, volLat, volLng) * 10) / 10;
+
+            await trySendEmail(emailUtil?.sendSosAlertEmail, vol.email, vol.name, {
+                category: sos.category,
+                details: sos.details,
+                volunteersNeeded: sos.volunteersNeeded,
+                distanceKm,
+                requestedByName: sos.requestedByName
+            });
+        }
+    } catch (error) {
+        console.error("SOS Email Notification Error:", error.message);
+    }
+}
+
 app.post('/api/sos', sosLimiter, optionalAuth, async (req, res) => {
     try {
         const { category, volunteersNeeded, details, latitude, longitude } = req.body;
@@ -382,6 +416,7 @@ app.post('/api/sos', sosLimiter, optionalAuth, async (req, res) => {
         await newSos.save();
 
         res.status(201).json({ message: "SOS request saved and broadcasted!", sos: newSos });
+     notifyNearbyVolunteersBySosEmail(newSos);
     } catch (error) {
         console.error("SOS Save Error:", error.message);
         res.status(500).json({ error: "Failed to save SOS request." });

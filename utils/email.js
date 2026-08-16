@@ -69,4 +69,27 @@ async function sendPasswordResetEmail(toEmail, name, resetToken) {
     });
 }
 
-module.exports = { sendVerificationEmail, sendPasswordResetEmail };
+// 🚨 নিকটবর্তী SOS Alert — radius-এর মধ্যে থাকা volunteer-দের email-এ পাঠানো হয়
+async function sendSosAlertEmail(toEmail, name, sosDetails) {
+    const { category, details, volunteersNeeded, distanceKm, requestedByName } = sosDetails;
+
+    await sendViaBrevo({
+        toEmail,
+        toName: name,
+        subject: `🚨 জরুরি SOS: ${category} — আপনার এলাকায়`,
+        htmlContent: `
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <h2 style="color: #dc2626;">🚨 জরুরি সাহায্যের প্রয়োজন</h2>
+                <p>প্রিয় ${name}, আপনার থেকে <strong>${distanceKm} কিলোমিটার</strong> দূরে একটি জরুরি SOS request এসেছে:</p>
+                <div style="background:#fef2f2; border-left:4px solid #dc2626; padding:15px; margin:15px 0;">
+                    <p style="margin:0;"><strong>ক্যাটাগরি:</strong> ${category}</p>
+                    <p style="margin:5px 0 0 0;"><strong>বিবরণ:</strong> ${details}</p>
+                    <p style="margin:5px 0 0 0;"><strong>প্রয়োজনীয় ভলান্টিয়ার:</strong> ${volunteersNeeded} জন</p>
+                    <p style="margin:5px 0 0 0;"><strong>রিকোয়েস্ট করেছেন:</strong> ${requestedByName}</p>
+                </div>
+                <p>সাহায্য করতে পারলে ওয়েবসাইটে লগইন করে GPS Search সেকশনে গিয়ে "🙋 আমি সাড়া দিচ্ছি" চাপুন।</p>
+            </div>
+        `
+    });
+}
+module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendSosAlertEmail };
