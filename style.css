@@ -504,7 +504,8 @@ body {
 }
 
 .btn-sm {
-    background: #e5e2f0;
+    background: red
+    color: white;;
     border: none;
     padding: 6px 12px;
     border-radius: 4px;
