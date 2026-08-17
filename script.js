@@ -1017,6 +1017,7 @@ async function quickLogin() {
         if (response.ok) {
             localStorage.setItem('volunteerToken', result.token);
             await loadVolunteerProfile();
+             alert('✅ Login successful! স্বাগতম, ' + loggedInVolunteer.name + '!');
         } else {
             errorBox.innerText = '❌ ' + result.error;
             if (result.needsVerification) {
@@ -1376,42 +1377,3 @@ document.getElementById('volunteer-reg-form').addEventListener('submit', async (
     }
 });
 
-// script.js এর একদম নিচে এই কোডটি পেস্ট করুন
-const loginForm = document.querySelector('#loginForm'); // আপনার HTML-এর ফর্মের ID
-
-if (loginForm) {
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const email = document.querySelector('#loginEmail').value;
-    const password = document.querySelector('#loginPassword').value;
-
-    try {
-      const response = await fetch('/api/volunteer/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('userToken', data.token);
-
-        // সাকসেস পপ-আপ মেসেজ
-        alert("Login Successful! Welcome back.");
-
-        // পপ-আপ দেখার ১.৫ সেকেন্ড পর পেজ রিফ্রেশ/ড্যাশবোর্ডে যাবে
-        setTimeout(() => {
-          window.location.reload(); 
-        }, 1500);
-
-      } else {
-        alert(data.error || "Login failed!");
-      }
-    } catch (error) {
-      console.error("Login Error:", error);
-      alert("Something went wrong!");
-    }
-  });
-}
